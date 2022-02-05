@@ -5,7 +5,10 @@ const loginAuthenticationBox = document.getElementById("login-authentication-box
 const loginErrorBox = document.getElementById("login-error-box");
 const loginErrorText = document.getElementById("login-error-text");
 const loginErrorButton = document.getElementById("login-error-button");
+
 const lobbyUI = document.getElementById("lobby-ui");
+const lobbyBackButton = document.getElementById("back-button");
+
 const gameUI = document.getElementById("game-ui");
 const loginScreenMusic = new Audio("./resources/audio/login_music.mp3");
 
@@ -25,7 +28,6 @@ function Initalize()
 function LoginButtonClicked()
 {
     loginButton.onclick = '';
-    socket = io("ws://34.197.155.63:10000");
     socket.on("connect_error", (error) => OnConnectionError(error));
     socket.on("connect", () => OnConnect());
     socket.on("disconnect", () => OnDisconnect());
@@ -34,8 +36,13 @@ function LoginButtonClicked()
 function ShowLogin()
 {
     accountName.value = "";
+    if(socket)
+    {
+        socket.close();
+    }
     loginButton.onclick = LoginButtonClicked;
     loginUI.style.visibility = 'visible';
+    loginAuthenticationBox.style.opacity = 1;
     loginAuthenticationBox.style.visibility = 'visible';
     loginErrorBox.style.visibility = 'hidden';
     lobbyUI.style.visibility = 'hidden';
@@ -70,16 +77,23 @@ function ShowLoginError(error)
 
 function LoginErrorButtonClicked()
 {
-    loginAuthenticationBox.style.opacity = 1;
+    ShowLogin();
+}
+
+function LobbyBackButtonClicked()
+{
+    console.log("showing login again");
     ShowLogin();
 }
 
 function ShowLobby()
 {
     HideLogin();
+    lobbyBackButton.onclick = LobbyBackButtonClicked;
     gameUI.style.visibility = 'hidden';
     lobbyUI.style.visibility = 'visible';
 }
+
 
 function ShowGame()
 {

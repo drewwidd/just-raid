@@ -30,10 +30,18 @@ function onConnect(socket)
 function onAuthenticate(socket,inputs)
 {
     var usernameValid = inputs.username.length>3 && inputs.username.length<=12;
-    var usernameTaken = null;
+    var usernameTaken = false;
     if(usernameValid)
     {
-        usernameTaken = Object.entries(clients).some(([id, client]) =>  inputs.username==client.username && client.authenticated);
+        for(const [id, client] of Object.entries(clients)) 
+        {
+            var clientUsername = client.username;
+            if(clientUsername && inputs.username.toLowerCase()==clientUsername.toLowerCase() && client.authenticated)
+            {
+                usernameTaken =true;
+                break;
+            }
+        }
         console.log(`Authenticating ${socket.id}, Username: ${inputs.username} Available: ${!usernameTaken}`)
     }
 
