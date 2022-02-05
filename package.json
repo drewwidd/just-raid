@@ -1,0 +1,15 @@
+{
+    "name": "just-raid",
+    "version": "0.0.1",
+    "description": "Just Raid.IO Game",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon server/server.js"
+    },
+    "author": "Andrew Biddinger",
+    "dependencies": {
+        "@socket.io/admin-ui": "^0.2.0",
+        "socket.io": "^4.4.1",
+        "socket.io-client": "^4.4.1"
+    }
+}

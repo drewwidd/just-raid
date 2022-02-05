@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Just Raid</title>
+  <link rel="stylesheet" type="text/css" href="base.css">
+</head>
+<body id="body">
+    <script src="https://cdn.socket.io/4.4.1/socket.io.js"></script>
+    <script src="./main.js" type="module"></script>
+    <div class="container" id="container">
+        <div class="ui" id="login-ui">
+            <div class="login-screen">
+                <div class="login-authentication-box" id="login-authentication-box">
+                    <div class="login-screen-text account-name-text">Account Name</div>
+                    <input class="login-input" id="login-input" maxlength="12" type="text" autocomplete="off"></input>
+                    <button class="login-button login-screen-buttons" id="login-button">Log In</button>
+                </div>
+                <div class="login-error-box" id="login-error-box">
+                    <div class="login-screen-text error-text" id="login-error-text"></div>
+                    <button class="error-button login-screen-buttons" id="login-error-button">OK</button>
+                </div>
+            </div>
+        </div>
+        <div class="ui" id="lobby-ui">
+        </div>
+        <div class="ui" id="game-ui">
+        </div>
+    </div>
+</body>
+</html>
