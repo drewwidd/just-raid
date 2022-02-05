@@ -25,7 +25,7 @@ function Initalize()
 function LoginButtonClicked()
 {
     loginButton.onclick = '';
-    socket = io("ws://127.0.0.1:10000");
+    socket = io("ws://34.197.155.63:10000");
     socket.on("connect_error", (error) => OnConnectionError(error));
     socket.on("connect", () => OnConnect());
     socket.on("disconnect", () => OnDisconnect());
