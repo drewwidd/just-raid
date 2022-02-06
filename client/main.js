@@ -28,7 +28,7 @@ function Initalize()
 function LoginButtonClicked()
 {
     loginButton.onclick = '';
-    socket = io("ws://34.197.155.63:10000");
+    socket = io("ws://34.197.155.63:10000",{ upgrade: false, transports: ['websocket'] });
     socket.on("connect_error", (error) => OnConnectionError(error));
     socket.on("connect", () => OnConnect());
     socket.on("disconnect", () => OnDisconnect());
@@ -69,7 +69,6 @@ function HideLogin()
 
 function ShowLoginError(error)
 {
-    console.log(error);
     loginErrorText.innerHTML = error;
     loginErrorButton.onclick = LoginErrorButtonClicked;
     loginErrorBox.style.visibility = 'visible';
@@ -83,7 +82,6 @@ function LoginErrorButtonClicked()
 
 function LobbyBackButtonClicked()
 {
-    console.log("showing login again");
     ShowLogin();
 }
 

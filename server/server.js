@@ -1,9 +1,11 @@
 const socket_io = require("socket.io");
 const admin_ui = require("@socket.io/admin-ui");
+const utilities = require("./utilities")
 var portNumber = 10000;
 
 let io = null;
 var clients = {};
+var rooms = {};
 
 function Initalize()
 {
@@ -25,11 +27,14 @@ function onConnect(socket)
     console.log(`Connected: ${socket.id}`);
     socket.on("disconnect", () => onDisconnect(socket));
     socket.on("authenticate", inputs => onAuthenticate(socket,inputs));
+    socket.on("get-rooms",() => onGetRooms(socket));
+    //socket.on("create-room",() => onCreateRoom(socket));
+    //socket.on("join-room",() => onJoinRoom(socket));
 }
 
 function onAuthenticate(socket,inputs)
 {
-    var usernameValid = inputs.username.length>3 && inputs.username.length<=12;
+    var usernameValid = inputs.username.length>3 && inputs.username.length<=12 && utilities.allLetter(inputs.username);
     var usernameTaken = false;
     if(usernameValid)
     {
@@ -47,7 +52,7 @@ function onAuthenticate(socket,inputs)
 
     if(!usernameValid)
     {
-        socket.authenticationError = "Username is invalid. Must be between 4 and 12 characters";
+        socket.authenticationError = "Username is invalid. Must be between 4 and 12 characters and contain only letters";
         socket.authenticated = false;
     }
     else if(usernameTaken)
@@ -69,6 +74,11 @@ function onAuthenticate(socket,inputs)
     }
 
     socket.emit("authentication",authenticationResponse);
+}
+
+function onGetRooms(socket)
+{
+    socket.emit("room-info",rooms);
 }
 
 function onDisconnect(socket)
