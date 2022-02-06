@@ -1,5 +1,6 @@
 {
     "name": "just-raid",
+    "type": "module",
     "version": "0.0.1",
     "description": "Just Raid.IO Game",
     "main": "index.js",
