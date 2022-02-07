@@ -1,6 +1,6 @@
 export function IsAllLetters(inputtxt)
 {
-    var letters = /^[A-Za-z]+$/;
+    const letters = /^[A-Za-z]+$/;
     if(inputtxt.match(letters))
     {
         return true;
@@ -10,7 +10,7 @@ export function IsAllLetters(inputtxt)
         return false;
     }
 }
-export function GetMapLength(map)
+export function GetObjectLength(obj)
 {
-    return Object.keys(map).length
+    return Object.keys(obj).length
 }

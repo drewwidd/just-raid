@@ -14,7 +14,6 @@ class LoginClient
         this.socket = socket;
         this.username = "";
         this.authenticated = false;
-        this.authenticationError = "";
     }
 
     get id()
@@ -42,7 +41,7 @@ export class WorldServer
     OnConnect(socket)
     {
         console.log(`Connected: ${socket.id}`);
-        var loginClient = new LoginClient(socket);
+        const loginClient = new LoginClient(socket);
         this.clients[loginClient.id] = loginClient;
 
         //Register for the other events handled by the world server
@@ -77,14 +76,14 @@ export class WorldServer
         var authenticationSuccess = usernameValid && !usernameTaken;
         console.log(`Authenticating ${loginClient.id}, Username: ${inputs.username} Success: ${authenticationSuccess}`);
         loginClient.authenticated = authenticationSuccess;
-        loginClient.authenticationError = "";
+        let error = "";
         if(!usernameValid)
         {
-            loginClient.authenticationError = "Username is invalid. Must be between 4 and 12 characters and contain only letters";
+            error = "Username is invalid. Must be between 4 and 12 characters and contain only letters";
         }
         else if(usernameTaken)
         {
-            loginClient.authenticationError = "Username already in use";
+            error = "Username already in use";
         }
         else
         {
@@ -97,7 +96,7 @@ export class WorldServer
         var authenticationResponse = 
         {
             authenticated: loginClient.authenticated,
-            error: loginClient.authenticationError
+            error
         }
     
         loginClient.socket.emit("authentication",authenticationResponse);
@@ -112,10 +111,10 @@ export class WorldServer
     }
     GetGameServerData()
     { 
-        var gameServersData = {};
-        for(const [id, server] of Object.entries(this.gameServers)) 
+        const gameServersData = {};
+        for(const server of Object.values(this.gameServers)) 
         {
-            var gameServerData = 
+            const gameServerData = 
             {
                 id: server.id,
                 currentPlayers: server.currentPlayers,
@@ -123,37 +122,41 @@ export class WorldServer
             }
             gameServersData[gameServerData.id] = gameServerData;
         }
-        return gameServerData;
+        return gameServersData;
     }
     OnCreateRoom(loginClient)
     {
-        var newGameRoom = new gameServer.GameServer(this.io,this.#GameRoomPrefix+loginClient.username);
+        console.log("Creating Room");
+        const newGameRoom = new gameServer.GameServer(this.io,this.#GameRoomPrefix+loginClient.username,
+            () => this.OnGameRoomUpdate(),
+            (gameRoom) => this.OnGameRoomDestroy(gameRoom));
         this.gameServers[newGameRoom.id] = newGameRoom;
 
         //join the client to the room
-        this.OnJoinRoom(loginClient,newGameRoom);
+        this.OnJoinRoom(loginClient,newGameRoom.id);
     }
-    OnJoinRoom(loginClient,roomToJoin)
+    OnGameRoomUpdate()
     {
-        this.gameServers[roomToJoin.id].Join(loginClient);
-        //Because the user joined a room, remove them from the lobby so they no longer receive lobby updates
-        loginClient.socket.leave(this.#LobbyRoom);
-
         //Inform everyone in the lobby of the room update
         this.SendRoomData(this.io.in(this.#LobbyRoom));
     }
+    OnGameRoomDestroy(gameRoom)
+    {
+        console.log(`Destroying game room ${gameRoom.id}`);
+        delete this.gameServers[gameRoom.id];
+    }
+    OnJoinRoom(loginClient,roomToJoin)
+    {
+        console.log(`${loginClient.username} is joining room ${roomToJoin}`);
+        //Because the user joined a room, remove them from the lobby so they no longer receive lobby updates
+        loginClient.socket.leave(this.#LobbyRoom);
+        this.gameServers[roomToJoin].Join(loginClient);
+    }
     OnLeaveRoom(loginClient,roomToLeave)
     {
-        this.gameServers[roomToJoin.id].Leave(loginClient);
-        //Check if this was the last person in the room, in which case destroy it
-        if(this.gameServers[roomToJoin.id].IsEmpty())
-        {
-            delete this.gameServers[roomToJoin.id];
-
-            //Inform everyone in the lobby of the room update
-            this.SendRoomData(this.io.in(this.#LobbyRoom));
-        }
+        console.log(`${loginClient.username} is leaving room ${roomToLeave}`);
         //Because the user left a room, rejoin them to the lobby so they can receive lobby updates
         loginClient.socket.join(this.#LobbyRoom);
+        this.gameServers[roomToLeave.id].Leave(loginClient);
     }
 }
