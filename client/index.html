@@ -13,25 +13,32 @@
                 <div class="login-authentication-box" id="login-authentication-box">
                     <div class="login-screen-text account-name-text">Account Name</div>
                     <input class="login-input" id="login-input" maxlength="12" type="text" autocomplete="off"></input>
-                    <button class="login-button login-screen-buttons" id="login-button">Log In</button>
+                    <button class="login-button buttons" id="login-button">Log In</button>
                 </div>
                 <div class="login-error-box" id="login-error-box">
                     <div class="login-screen-text error-text" id="login-error-text"></div>
-                    <button class="error-button login-screen-buttons" id="login-error-button">OK</button>
+                    <button class="error-button buttons" id="login-error-button">OK</button>
                 </div>
             </div>
         </div>
         <div class="ui" id="lobby-ui">
             <div class="lobby-screen">
-                <button class="lobby-back-button lobby-screen-buttons" id="back-button">Back</button>
-                <button class="lobby-new-game-button lobby-screen-buttons" id="new-game-button">New Game</button>
+                <button class="lobby-back-button buttons" id="back-button">Back</button>
+                <button class="lobby-new-game-button buttons" id="new-game-button">New Game</button>
                 <div class="lobby-game-rooms" id="lobby-game-rooms">
                 </div>
             </div>
         </div>
         <div class="ui" id="game-ui">
-            <div class="game-chat" id="game-chat"></div>
-            <input class="game-chat-input" id="game-chat-input"></div>
+            <div class="game-screen">
+                <div class="game-menu" id="game-menu">
+                    <div class="game-menu-text">Game Menu</div>
+                    <button class="game-logout-button buttons" id="game-logout-button">Log Out</button>
+                    <button class="game-return-button buttons" id="game-return-button">Return to Game</button>
+                </div>
+                <div class="game-chat" id="game-chat"></div>
+                <input class="game-chat-input" id="game-chat-input"></div>
+            </div>
         </div>
     </div>
 </body>

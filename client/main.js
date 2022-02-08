@@ -13,7 +13,10 @@ const lobbyBackButton = document.getElementById("back-button");
 const lobbyGameRooms = document.getElementById("lobby-game-rooms");
 const lobbyNewGameButton = document.getElementById("new-game-button");
 const gameUI = document.getElementById("game-ui");
+const gameMenu = document.getElementById("game-menu");
 const gameChat = document.getElementById("game-chat");
+const gameReturnButton = document.getElementById("game-return-button");
+const gameLogoutButton = document.getElementById("game-logout-button");
 const gameChatInput = document.getElementById("game-chat-input");
 const loginScreenMusic = new Audio("./resources/audio/login_music.mp3");
 
@@ -98,10 +101,6 @@ function LobbyNewGameButtonClicked()
 
 function OnRoomUpdate(rooms)
 {
-    console.dir(rooms);
-    console.log(`Received room update. Total: ${utilities.GetObjectLength(rooms)}`);
-    
-    console.log(`Rooms im already displaying: ${utilities.GetObjectLength(lobbyGameInfo)}`)
     //First let's iterate through the old rooms and if there are any in our list that aren't in the new list remove them
     const roomKeys = Object.keys(rooms);
     for (const [id, gameDiv] of Object.entries(lobbyGameInfo))
@@ -160,7 +159,7 @@ function ShowGame()
     lobbyUI.style.visibility = 'hidden';
     gameUI.style.visibility = 'visible';
     
-    gameUI.onkeypress = function(key){OnGameKeyPress(key)};
+    document.onkeydown = function(key){OnGameKeyPress(key)};
     gameChatInput.onkeypress = function(key){OnChatKeyPress(key)};
     socket.on("server-message", (message) => OnServerMessage(message));
     socket.on("user-message", (message) => OnUserMessage(message));
@@ -169,7 +168,21 @@ function ShowGame()
 function OnGameKeyPress(key)
 {
     var keyCode = key.code || key.key;
-    console.log(keyCode);
+    if(keyCode=="Escape" && gameUI.style.visibility=="visible")
+    {
+        ToggleGameMenu();
+    }
+}
+function ToggleGameMenu()
+{
+    if(gameMenu.style.visibility=="visible")
+    {
+        gameMenu.style.visibility = "hidden";
+    }
+    else
+    {
+        gameMenu.style.visibility = "visible";
+    }
 }
 function OnChatKeyPress(key)
 {
@@ -185,17 +198,24 @@ function OnChatKeyPress(key)
     }
 }
 
+function UpdateChatBox(message)
+{
+    const currentTime = new Date();
+    gameChat.innerHTML += "["+currentTime.getHours()+":"+currentTime.getMinutes()+":"+currentTime.getSeconds()+"] "+message+"<br>";
+    gameChat.scrollTop = gameChat.scrollHeight;
+}
 function OnServerMessage(message)
 {
     console.log(`Received server message: ${message}`);
-    gameChat.innerHTML += message+"<br>";
+    const messageToUpdate = message+"<br>";
+    UpdateChatBox(messageToUpdate);
 }
 
 function OnUserMessage(message)
 {
     console.log(`Received user message: ${message} ${message.username}: ${message.message}`);
-    gameChat.innerHTML += message.username+": "+message.message+"<br>";
-    gameChat.scrollTop = gameChat.scrollHeight;
+    const messageToUpdate = message.username+": "+message.message+"<br>";
+    UpdateChatBox(messageToUpdate);
 }
 
 function OnConnectionError(error)
@@ -242,3 +262,83 @@ function OnDisconnect()
     ShowLogin();
     ShowLoginError("Disconnected from Server");
 }
+
+
+
+
+
+
+
+
+
+
+
+//The following code allows us to drag an item of the UI around. 
+/*
+var dragItem = gameChat;
+var container = gameUI;
+
+var active = false;
+var currentX;
+var currentY;
+var initialX;
+var initialY;
+var xOffset = 0;
+var yOffset = 0;
+
+container.addEventListener("touchstart", dragStart, false);
+container.addEventListener("touchend", dragEnd, false);
+container.addEventListener("touchmove", drag, false);
+
+container.addEventListener("mousedown", dragStart, false);
+container.addEventListener("mouseup", dragEnd, false);
+container.addEventListener("mousemove", drag, false);
+
+function dragStart(e) {
+  if (e.type === "touchstart") 
+  {
+    initialX = e.touches[0].clientX - xOffset;
+    initialY = e.touches[0].clientY - yOffset;
+  } 
+  else 
+  {
+    initialX = e.clientX - xOffset;
+    initialY = e.clientY - yOffset;
+  }
+
+  if (e.target === dragItem)    //should add a check here and only allow a drag to start if shift is being held
+  {
+    active = true;
+  }
+}
+
+function dragEnd(e) {
+  initialX = currentX;
+  initialY = currentY;
+
+  active = false;
+}
+
+function drag(e) {
+  if (active) {
+  
+    e.preventDefault();
+  
+    if (e.type === "touchmove") {
+      currentX = e.touches[0].clientX - initialX;
+      currentY = e.touches[0].clientY - initialY;
+    } else {
+      currentX = e.clientX - initialX;
+      currentY = e.clientY - initialY;
+    }
+
+    xOffset = currentX;
+    yOffset = currentY;
+
+    setTranslate(currentX, currentY, dragItem);
+  }
+}
+
+function setTranslate(xPos, yPos, el) {
+  el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+}*/
