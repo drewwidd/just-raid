@@ -39,7 +39,7 @@ export class GameServer
         //join the user to the socket room
         loginClient.socket.join(this.id);
 
-        loginClient.socket.emit("join-room-success");
+        loginClient.socket.emit("join-room-success",this.id);
 
         //send server chat message to everyone in the room
         this.#io.in(this.id).emit("server-message",`${loginClient.username} has joined the room.`);
@@ -49,12 +49,18 @@ export class GameServer
 
     OnDisconnect(loginClient)
     {
+        console.log(`Player ${loginClient.username} disconnected.`);
         this.Leave(loginClient);
     }
 
     Leave(loginClient)
     {
         console.log(`Player ${loginClient.username} left room ${this.id}`);
+
+        //Clean up the loginClient socket
+        loginClient.socket.removeAllListeners("chat-message");
+        //We should remove our listener for the disconnect call too but the problem is this will remove it elsewhere and we don't want that. Need to revisit this
+        // ideally we would just remove our listener but that does not seem to be working
 
         //send server chat message to everyone in the room
         this.#io.in(this.id).emit("server-message",`${loginClient.username} has left the room.`);
@@ -82,6 +88,7 @@ export class GameServer
             username:loginClient.username,
             message: message
         }
+        console.log(`Recived message from ${broadcastMessage.username}: ${broadcastMessage.message}`)
         this.#io.in(this.id).emit("user-message",broadcastMessage);
     }
 

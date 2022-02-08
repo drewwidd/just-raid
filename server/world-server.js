@@ -157,6 +157,6 @@ export class WorldServer
         console.log(`${loginClient.username} is leaving room ${roomToLeave}`);
         //Because the user left a room, rejoin them to the lobby so they can receive lobby updates
         loginClient.socket.join(this.#LobbyRoom);
-        this.gameServers[roomToLeave.id].Leave(loginClient);
+        this.gameServers[roomToLeave].Leave(loginClient);
     }
 }
