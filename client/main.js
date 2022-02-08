@@ -18,7 +18,7 @@ function initalize()
 
 function onLoginButtonClick()
 {
-    socket = io("ws://127.0.0.1:10000",{ upgrade: false, transports: ['websocket'] });
+    socket = io("ws://34.197.155.63:10000",{ upgrade: false, transports: ['websocket'] });
     socket.on("connect_error", (error) => onConnectionError(error));
     socket.on("connect", () => onConnect());
     socket.on("disconnect", () => onDisconnect());
@@ -118,76 +118,3 @@ function onLogout()
     gameScreen = null;
     lobbyScreen.show();
 }
-
-
-
-
-//The following code allows us to drag an item of the UI around. 
-/*
-var dragItem = gameChat;
-var container = gameUI;
-
-var active = false;
-var currentX;
-var currentY;
-var initialX;
-var initialY;
-var xOffset = 0;
-var yOffset = 0;
-
-container.addEventListener("touchstart", dragStart, false);
-container.addEventListener("touchend", dragEnd, false);
-container.addEventListener("touchmove", drag, false);
-
-container.addEventListener("mousedown", dragStart, false);
-container.addEventListener("mouseup", dragEnd, false);
-container.addEventListener("mousemove", drag, false);
-
-function dragStart(e) {
-  if (e.type === "touchstart") 
-  {
-    initialX = e.touches[0].clientX - xOffset;
-    initialY = e.touches[0].clientY - yOffset;
-  } 
-  else 
-  {
-    initialX = e.clientX - xOffset;
-    initialY = e.clientY - yOffset;
-  }
-
-  if (e.target === dragItem)    //should add a check here and only allow a drag to start if shift is being held
-  {
-    active = true;
-  }
-}
-
-function dragEnd(e) {
-  initialX = currentX;
-  initialY = currentY;
-
-  active = false;
-}
-
-function drag(e) {
-  if (active) {
-  
-    e.preventDefault();
-  
-    if (e.type === "touchmove") {
-      currentX = e.touches[0].clientX - initialX;
-      currentY = e.touches[0].clientY - initialY;
-    } else {
-      currentX = e.clientX - initialX;
-      currentY = e.clientY - initialY;
-    }
-
-    xOffset = currentX;
-    yOffset = currentY;
-
-    setTranslate(currentX, currentY, dragItem);
-  }
-}
-
-function setTranslate(xPos, yPos, el) {
-  el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-}*/

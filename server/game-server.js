@@ -88,7 +88,6 @@ export class GameServer
             username:loginClient.username,
             message: message
         }
-        console.log(`Recived message from ${broadcastMessage.username}: ${broadcastMessage.message}`)
         this.#io.in(this.id).emit("user-message",broadcastMessage);
     }
 

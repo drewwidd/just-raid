@@ -46,13 +46,13 @@ export class GameScreen extends cs.ClientScreen
 {
     constructor(socket,onLogout,roomID)
     {
-        console.log("Creating the game screen");
         super();
         this.socket = socket;
         this.roomID = roomID;
         this.container = document.getElementById("game-ui");
         this.gameChat = document.getElementById("game-chat");
         this.gameChat.innerHTML = null;
+        this.gameChat.style.visibility = "visible";
         this.gameChatInput = document.getElementById("game-chat-input");
         this.gameMenu = new GameMenu(socket,onLogout,roomID);
         
@@ -66,6 +66,7 @@ export class GameScreen extends cs.ClientScreen
     {
         this.hide();
         document.onkeydown = null;
+        this.gameChat.style.visibility = "hidden";
         this.gameChatInput.onkeydown = null;
         this.socket.removeAllListeners("server-message");   //socket.off wasn't working but this does (as long as no other classes are also listening for this message)
         this.socket.removeAllListeners("user-message");     //socket.off wasn't working but this does (as long as no other classes are also listening for this message
@@ -87,27 +88,51 @@ export class GameScreen extends cs.ClientScreen
             this.gameChatInput.value = "";
             if(message)
             {
-                console.log("sending message");
                 this.socket.emit("chat-message",message);
             }
         }
     }
     onServerMessage(message)
     {
-        console.log(`Server message!: ${message}`);
         const messageToUpdate = message;
         this.updateChatBox(messageToUpdate);
     }
     
     onUserMessage(message)
     {
-        console.log(`User message!: ${message}`);
-        const messageToUpdate = message.username+": "+message.message;
-        this.updateChatBox(messageToUpdate);
+        if(message.message.toString().startsWith("/")) //if the message starts with a backslash
+        {
+            this.processUserCommands(message.message);
+        }
+        else
+        {
+            const messageToUpdate = message.username+": "+message.message;
+            this.updateChatBox(messageToUpdate);
+        }
+    }
+    processUserCommands(message)
+    {
+        const command = message.substr(1).split(' ')[0];
+        console.log(`Command: $${command}$`);
+        console.log(`Command: $${this.gameChat.style.visibility}$`);
+        switch(command)
+        {
+            case "chat":    // toggle teh chat box open or close
+                if(this.gameChat.style.visibility=="visible")
+                {
+                    console.log("Hiding chat");
+                    this.gameChat.style.visibility = "hidden";
+                }
+                else
+                {
+                    console.log("Showing chat");
+                    this.gameChat.style.visibility = "visible";
+                }
+                break;
+        }
     }
     updateChatBox(message)
     {
-        console.log(`Updaitng chatbox with ${message}`);
         const currentTime = new Date().toLocaleTimeString();
         //this.gameChat.innerHTML += "["+currentTime.getHours()+":"+currentTime.getMinutes()+":"+currentTime.getSeconds()+"] "+message+"<br>";
         this.gameChat.innerHTML += "["+currentTime+"] "+message+"<br>";
@@ -127,3 +152,83 @@ export class GameScreen extends cs.ClientScreen
         return this.container.style.visibility=="visible";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+//The following code allows us to drag an item of the UI around. 
+/*
+var dragItem = gameChat;
+var container = gameUI;
+
+var active = false;
+var currentX;
+var currentY;
+var initialX;
+var initialY;
+var xOffset = 0;
+var yOffset = 0;
+
+container.addEventListener("touchstart", dragStart, false);
+container.addEventListener("touchend", dragEnd, false);
+container.addEventListener("touchmove", drag, false);
+
+container.addEventListener("mousedown", dragStart, false);
+container.addEventListener("mouseup", dragEnd, false);
+container.addEventListener("mousemove", drag, false);
+
+function dragStart(e) {
+  if (e.type === "touchstart") 
+  {
+    initialX = e.touches[0].clientX - xOffset;
+    initialY = e.touches[0].clientY - yOffset;
+  } 
+  else 
+  {
+    initialX = e.clientX - xOffset;
+    initialY = e.clientY - yOffset;
+  }
+
+  if (e.target === dragItem)    //should add a check here and only allow a drag to start if shift is being held
+  {
+    active = true;
+  }
+}
+
+function dragEnd(e) {
+  initialX = currentX;
+  initialY = currentY;
+
+  active = false;
+}
+
+function drag(e) {
+  if (active) {
+  
+    e.preventDefault();
+  
+    if (e.type === "touchmove") {
+      currentX = e.touches[0].clientX - initialX;
+      currentY = e.touches[0].clientY - initialY;
+    } else {
+      currentX = e.clientX - initialX;
+      currentY = e.clientY - initialY;
+    }
+
+    xOffset = currentX;
+    yOffset = currentY;
+
+    setTranslate(currentX, currentY, dragItem);
+  }
+}
+
+function setTranslate(xPos, yPos, el) {
+  el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+}*/
