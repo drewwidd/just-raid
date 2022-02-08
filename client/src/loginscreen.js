@@ -65,7 +65,7 @@ export class LoginScreen extends cs.ClientScreen
     constructor(onLoginButtonClick)
     {
         super();
-        this.loginScreenMusic = new Audio("/client/resources/audio/login_music.mp3");
+        this.loginScreenMusic = new Audio("./resources/audio/login_music.mp3");
         this.container = document.getElementById("login-ui");
         this.container.onclick = () => this.startAudio();
         this.authenticationBox = new LoginAuthenticationBox(onLoginButtonClick);
