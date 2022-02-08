@@ -85,7 +85,7 @@ body
     height:30px;
     text-align: center;
     font-size: 1.5em;
-    color: var(--ui-primary);
+    color: var(--ui-secondary);
 }
 
 .login-screen-text
@@ -232,15 +232,16 @@ body
     overflow-y: auto;
     font-size: 20px;
     color: white;
-    padding: 10px;
+    padding: 5px;
+    line-height:1.5;
 }
 
 .game-chat-input
 {
     position: absolute;
-    top:1030px;
+    top:1020px;
     left:5px;
-    width: 558px;
+    width: 548px;
     height: 40px;
     border-style: solid;
     border-width: 3px;

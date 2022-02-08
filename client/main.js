@@ -207,14 +207,14 @@ function UpdateChatBox(message)
 function OnServerMessage(message)
 {
     console.log(`Received server message: ${message}`);
-    const messageToUpdate = message+"<br>";
+    const messageToUpdate = message;
     UpdateChatBox(messageToUpdate);
 }
 
 function OnUserMessage(message)
 {
     console.log(`Received user message: ${message} ${message.username}: ${message.message}`);
-    const messageToUpdate = message.username+": "+message.message+"<br>";
+    const messageToUpdate = message.username+": "+message.message;
     UpdateChatBox(messageToUpdate);
 }
 
