@@ -1,14 +1,48 @@
+import { World } from "./physics.js";
 import * as utilities from "../shared/utilities.js"; 
+import { TestMap } from "./maps/testmap.js";
+import CANNON from "cannon";
 
 class Player
 {
     #client;
-    constructor(loginClient)
+    #body;
+    constructor(loginClient,world)
     {
         this.#client = loginClient;
         this.leader = false;
+        this.id = loginClient.id;
+        this.size = new CANNON.Vec3(10,20,10);
+
+        this.spawn(world);
+    }
+
+    spawn(world)
+    {
+        this.#body = new CANNON.Body(
+        {
+            shape: new CANNON.Box(new CANNON.Vec3(this.size.x/2,this.size.y/2,this.size.z/2)),
+            mass: 10,
+            position: new CANNON.Vec3(0,20,0),
+            angularDamping:1,
+        });
+        world.addBody(this.#body);
+    }
+
+    getInfo()
+    {
+        const info =
+        {
+            id : this.id,
+            leader: this.leader,
+            size: this.size,
+            position: this.#body.position,
+            quaternion: this.#body.quaternion
+        }
+        return info;
     }
 }
+
 export class GameServer
 {
     #io;            //This field MUST be private so that we don't transmit it and cause an endless recursion
@@ -17,17 +51,52 @@ export class GameServer
     {
         this.#io = io;
         this.players = {};
+        this.rooms = [];
         this.id = id;
         this.maximumPlayers = 20;
         this.onUpdate = onUpdate;
         this.onDestroy = onDestroy;
+
+        this.initalize();
+        setInterval(() => this.updateGameState(),1000/60);
+        setInterval(() => this.updateClients(),100);
+    }
+    initalize()
+    {
+        //Create the physics world so we can run server side physics
+        this.world = new World();
+
+        //Create the Test Map
+        const testMap = new TestMap(this.world);
+        this.rooms.push(testMap.name);
+    }
+    updateGameState()
+    {
+        const timeBetweenFrames = (1/60);   //60 FPS
+
+        //Update the objects using physics
+        this.world.step(timeBetweenFrames);
+    }
+    updateClients()
+    {
+        const playerInfo = {};
+        for (const [id, player] of Object.entries(this.players))
+        {
+            playerInfo[id] = player.getInfo();
+        }
+        const gameState = 
+        {
+            rooms: this.rooms,
+            players: playerInfo
+        }
+        this.#io.in(this.id).emit("game-update",gameState);
     }
 
     Join(loginClient)
     {
         console.log(`Player ${loginClient.username} joined room ${this.id}`);
         loginClient.socket.on("disconnect", () => this.OnDisconnect(loginClient));
-        const newPlayer = new Player(loginClient);
+        const newPlayer = new Player(loginClient,this.world);
         if(this.IsEmpty())
         {
             console.log(`Making Player ${loginClient.username} the leader.`);
@@ -35,6 +104,7 @@ export class GameServer
         }
         this.players[loginClient.id] = newPlayer;
         loginClient.socket.on("chat-message", message => this.OnChatMessage(loginClient,message));
+        loginClient.socket.on("user-update", inputs => this.OnUserUpdate(loginClient,inputs));
 
         //join the user to the socket room
         loginClient.socket.join(this.id);
@@ -45,6 +115,9 @@ export class GameServer
         this.#io.in(this.id).emit("server-message",`${loginClient.username} has joined the room.`);
 
         this.onUpdate();
+    }
+    OnUserUpdate(loginClient,inputs)
+    {
     }
 
     OnDisconnect(loginClient)

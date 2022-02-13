@@ -1,4 +1,5 @@
 import * as cs from "./clientscreen.js";
+import { Game } from "./game/game.js";
 
 class GameMenu
 {
@@ -50,6 +51,7 @@ export class GameScreen extends cs.ClientScreen
         this.socket = socket;
         this.roomID = roomID;
         this.container = document.getElementById("game-ui");
+        this.gameCanvas = document.getElementById("game-canvas");
         this.gameChat = document.getElementById("game-chat");
         this.gameChat.innerHTML = null;
         this.gameChat.style.visibility = "visible";
@@ -60,7 +62,15 @@ export class GameScreen extends cs.ClientScreen
         this.gameChatInput.onkeydown = (key) => this.onChatKeyPress(key);
         this.socket.on("server-message", (message) => this.onServerMessage(message));
         this.socket.on("user-message", (message) => this.onUserMessage(message));
+
+        this.game = new Game(this.gameCanvas,this.socket,socket.id);
+        this.socket.on("game-update", (gameState) => this.game.onUpdate(gameState));
+
+        //Temporary code to hide chat
+        this.gameChat.style.visibility = "hidden";
+        this.gameChatInput.style.visibility = "hidden";
     }
+
     //not sure if JS has destructors so we'll do this for now
     destroy()
     {
@@ -76,6 +86,7 @@ export class GameScreen extends cs.ClientScreen
         var keyCode = key.code || key.key;
         if(keyCode=="Escape" && this.isShown())
         {
+            console.log("Toggle the game menu!");
             this.gameMenu.toggle();
         }
     }
@@ -113,19 +124,15 @@ export class GameScreen extends cs.ClientScreen
     processUserCommands(message)
     {
         const command = message.substr(1).split(' ')[0];
-        console.log(`Command: $${command}$`);
-        console.log(`Command: $${this.gameChat.style.visibility}$`);
         switch(command)
         {
             case "chat":    // toggle teh chat box open or close
                 if(this.gameChat.style.visibility=="visible")
                 {
-                    console.log("Hiding chat");
                     this.gameChat.style.visibility = "hidden";
                 }
                 else
                 {
-                    console.log("Showing chat");
                     this.gameChat.style.visibility = "visible";
                 }
                 break;
@@ -134,7 +141,6 @@ export class GameScreen extends cs.ClientScreen
     updateChatBox(message)
     {
         const currentTime = new Date().toLocaleTimeString();
-        //this.gameChat.innerHTML += "["+currentTime.getHours()+":"+currentTime.getMinutes()+":"+currentTime.getSeconds()+"] "+message+"<br>";
         this.gameChat.innerHTML += "["+currentTime+"] "+message+"<br>";
         this.gameChat.scrollTop = this.gameChat.scrollHeight;
     }

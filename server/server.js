@@ -4,6 +4,7 @@
 import * as socket_io from "socket.io";
 import * as admin_ui from "@socket.io/admin-ui";
 import * as world_server from "./world-server.js";
+
 const portNumber = 10000;
 
 function InitalizeServer()

@@ -107,6 +107,8 @@ export class LoginScreen extends cs.ClientScreen
 
     hide()
     {
+        this.errorBox.hide();
+        this.authenticationBox.hide();
         this.container.style.visibility = 'hidden';
     }
 }

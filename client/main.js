@@ -1,3 +1,4 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 import { LoginScreen } from "./src/loginscreen.js";
 import { LobbyScreen } from "./src/lobbyscreen.js";
 import { GameScreen } from "./src/gamescreen.js";
@@ -14,11 +15,15 @@ function initalize()
 {
     loginScreen = new LoginScreen(onLoginButtonClick);
     loginScreen.show();
+
+    //Temporary code here to auto log in as "Drew"
+    loginScreen.authenticationBox.accountNameInput.value = "Drew";
+    loginScreen.authenticationBox.loginButton.click();
 }
 
 function onLoginButtonClick()
 {
-    socket = io("ws://34.197.155.63:10000",{ upgrade: false, transports: ['websocket'] });
+    socket = io("ws://127.0.0.1:10000",{ upgrade: false, transports: ['websocket'] });
     socket.on("connect_error", (error) => onConnectionError(error));
     socket.on("connect", () => onConnect());
     socket.on("disconnect", () => onDisconnect());
@@ -62,7 +67,7 @@ function onDisconnect()
 }
 function onAuthenticationResponse(response)
 {
-    var logResponse = `Received authentication response. Authenticated: ${response.authenticated}`;
+    const logResponse = `Received authentication response. Authenticated: ${response.authenticated}`;
     if(!response.authenticated)
     {
         logResponse+= ` Error: ${response.error}`;
@@ -87,6 +92,9 @@ function createLobby()
     socket.on("rooms", (rooms) => lobbyScreen.onRoomUpdate(rooms));
     socket.on("join-room-success", (roomID) => onJoinGameSuccess(roomID));
     socket.emit("get-rooms");
+
+    //Temporary code for testing to automatically creat a new game
+    onNewGameButtonClick();
 }
 
 function onBackButtonClick()
@@ -113,7 +121,6 @@ function onJoinGameSuccess(roomID)
 }
 function onLogout()
 {
-    console.log("User logging out of the game");
     gameScreen.destroy();
     gameScreen = null;
     lobbyScreen.show();

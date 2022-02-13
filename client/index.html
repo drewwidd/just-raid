@@ -5,7 +5,11 @@
   <link rel="stylesheet" type="text/css" href="base.css">
 </head>
 <body id="body">
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/three@0.137.5/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.5/examples/jsm/loaders/FBXLoader.js"></script>-->
     <script src="https://cdn.socket.io/4.4.1/socket.io.js"></script>
+    <script src="./resources/cannon.js"></script>
     <script src="./main.js" type="module"></script>
     <div class="container" id="container">
         <div class="ui" id="login-ui">
@@ -30,14 +34,15 @@
             </div>
         </div>
         <div class="ui" id="game-ui">
-            <div class="game-screen">
+            <div class="game-screen" id="game-screen">
+                <canvas class="game-canvas" id="game-canvas"></canvas>
                 <div class="game-menu" id="game-menu">
                     <div class="game-menu-text">Game Menu</div>
                     <button class="game-logout-button buttons" id="game-logout-button">Log Out</button>
                     <button class="game-return-button buttons" id="game-return-button">Return to Game</button>
                 </div>
                 <div class="game-chat" id="game-chat"></div>
-                <input class="game-chat-input" id="game-chat-input" autocomplete="off"></div>
+                <input class="game-chat-input" id="game-chat-input" autocomplete="off">
             </div>
         </div>
     </div>
