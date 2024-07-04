@@ -17,8 +17,8 @@ function initalize()
     loginScreen.show();
 
     //Temporary code here to auto log in as "Drew"
-    //loginScreen.authenticationBox.accountNameInput.value = "Drew";
-    //loginScreen.authenticationBox.loginButton.click();
+    loginScreen.authenticationBox.accountNameInput.value = "Drew";
+    loginScreen.authenticationBox.loginButton.click();
 }
 
 function onLoginButtonClick()
@@ -93,8 +93,8 @@ function createLobby()
     socket.on("join-room-success", (roomID) => onJoinGameSuccess(roomID));
     socket.emit("get-rooms");
 
-    //Temporary code for testing to automatically creat a new game
-    //onNewGameButtonClick();
+    //Temporary code for testing to automatically create a new game
+    onNewGameButtonClick();
 }
 
 function onBackButtonClick()

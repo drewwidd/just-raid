@@ -133,7 +133,7 @@ export class GameServer
 
     Leave(loginClient)
     {
-        this.players[loginClient.id].despawn();
+        this.players[loginClient.id].despawn(this.world);
         console.log(`Player ${loginClient.username} left room ${this.id}`);
 
         //Clean up the loginClient socket

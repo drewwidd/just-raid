@@ -9,7 +9,7 @@ export class Camera extends THREE.PerspectiveCamera
         const far = 1000.0;
         super(fov,aspect,near,far);
 
-        this.position.set(0,60,100);
+        this.position.set(0,60,-100);
         this.lookAt(0,40,0);
     }
 }
