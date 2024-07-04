@@ -11,7 +11,7 @@ export class World extends CANNON.World
 
     initalize()
     {
-        this.gravity = new CANNON.Vec3(0,-9.81,0);
+        this.gravity = new CANNON.Vec3(0,-9.81*5,0);
     }
 }
 

@@ -67,8 +67,8 @@ export class GameScreen extends cs.ClientScreen
         this.socket.on("game-update", (gameState) => this.game.onUpdate(gameState));
 
         //Temporary code to hide chat
-        this.gameChat.style.visibility = "hidden";
-        this.gameChatInput.style.visibility = "hidden";
+        //this.gameChat.style.visibility = "hidden";
+        //this.gameChatInput.style.visibility = "hidden";
     }
 
     //not sure if JS has destructors so we'll do this for now
@@ -126,7 +126,7 @@ export class GameScreen extends cs.ClientScreen
         const command = message.substr(1).split(' ')[0];
         switch(command)
         {
-            case "chat":    // toggle teh chat box open or close
+            case "chat":    // toggle the chat box open or close
                 if(this.gameChat.style.visibility=="visible")
                 {
                     this.gameChat.style.visibility = "hidden";

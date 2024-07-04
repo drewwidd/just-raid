@@ -79,7 +79,6 @@ export class TestMap
             {
                 world.addBody(components[i].body);
             }
-            //componentlist.push(component);
         }
     }
 }

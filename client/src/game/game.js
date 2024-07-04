@@ -68,20 +68,6 @@ class BasicCharacterController
             )
             this.physicsBodyMesh = new THREE.Mesh(boxGeometry,boxMaterial);
         }
-
-        /*            
-        const boxComponent = new DisplayComponent();
-        boxComponent.display = boxMesh;
-        boxComponent.body = boxBody;
-        this.#components.push(boxComponent);
-
-        this.players[player.id] = boxComponent;
-
-        boxComponent.body.position.copy(player.position);
-        boxComponent.body.quaternion.copy(player.quaternion);
-
-        boxComponent.add(this.scene,this.world);
-        */
     }
     LoadModels() 
     {
@@ -140,15 +126,27 @@ class BasicCharacterController
           loader.load('dance.fbx', (a) => { OnLoad('dance', a); });
         });
     }
-    Update(timeInSeconds) 
+    Test()
     {
-        if (!this.model) 
-        {
-          return;
-        }
-    
+        const a = 1;
+        const b = 2;
+        const c = 3;
+
+        return {a,b,c};
+    }
+    UpdateAnimations(timeInSeconds)
+    {
+        //Update the state machine for animations
         this.stateMachine.Update(timeInSeconds, this.input);
-    
+        
+        //Update Animations
+        if (this.mixer) 
+        {
+            this.mixer.update(timeInSeconds);
+        }
+    }
+    UpdateCharacterMovement(timeInSeconds)
+    {
         const velocity = this.velocity;
         const frameDecceleration = new THREE.Vector3(
             velocity.x * this.decceleration.x,
@@ -200,15 +198,6 @@ class BasicCharacterController
             tempR.multiply(Q);
         }
     
-        //controlObject.quaternion.copy(R);
-        controlObject.quaternion.x = tempR.x;
-        controlObject.quaternion.y = tempR.y;
-        controlObject.quaternion.z = tempR.z;
-        controlObject.quaternion.w = tempR.w;
-    
-        const oldPosition = new THREE.Vector3();
-        oldPosition.copy(controlObject.position);
-    
         const forward = new THREE.Vector3(0, 0, 1);
         forward.applyQuaternion(controlObject.quaternion);
         forward.normalize();
@@ -219,22 +208,34 @@ class BasicCharacterController
     
         sideways.multiplyScalar(velocity.x * timeInSeconds);
         forward.multiplyScalar(velocity.z * timeInSeconds);
-
-        controlObject.position.x += forward.x;
-        controlObject.position.y += forward.y;
-        controlObject.position.z += forward.z;
         
-        controlObject.position.x += sideways.x;
-        controlObject.position.y += sideways.y;
-        controlObject.position.z += sideways.z;
-    
-        oldPosition.copy(controlObject.position);
-        
-        //Update Animations
-        if (this.mixer) 
+        const position = new THREE.Vector3();
+        position.x = this.physicsBody.position.x + forward.x + sideways.x;
+        position.y = this.physicsBody.position.y + forward.y + sideways.y;
+        position.z = this.physicsBody.position.z + forward.z + sideways.z;
+        return {position,tempR};
+    }
+    Update(timeInSeconds) 
+    {
+        if (!this.model) 
         {
-            this.mixer.update(timeInSeconds);
+          return;
         }
+    
+        this.UpdateAnimations(timeInSeconds);
+        let {position,tempR} = this.UpdateCharacterMovement(timeInSeconds);
+
+        //this.updatePhysicsBody(position,tempR);
+    }
+    updatePhysicsBody(position,quaternion)
+    {
+        this.physicsBody.quaternion.x = quaternion.x;
+        this.physicsBody.quaternion.y = quaternion.y;
+        this.physicsBody.quaternion.z = quaternion.z;
+        this.physicsBody.quaternion.w = quaternion.w;
+        this.physicsBody.position.x = position.x;
+        this.physicsBody.position.y = position.y;
+        this.physicsBody.position.z = position.z;
     }
 }
 
@@ -657,48 +658,12 @@ export class Game
             {
                 if(player.id==this.myID)    //ignore other players for now
                 {
-                    if(this.controls==undefined)
+                    if(this.playerController==undefined)
                     {
                         //Create our player controller
-                        this.controls = new BasicCharacterController({camera:this.camera, scene:this.scene, player:player,world:this.world,components:this.#components});
-
-                        /*const boxWidth = player.size.x;
-                        const boxHeight = player.size.y;
-                        const boxDepth = player.size.z;
-                        const boxGeometry = new THREE.BoxGeometry(boxWidth,boxHeight,boxDepth);
-                        const boxMaterial = new THREE.MeshBasicMaterial(
-                            {
-                                color: 0xFF0000,
-                                wireframe: true
-                            }
-                        )
-                        const boxMesh = new THREE.Mesh(boxGeometry,boxMaterial);
-                        const boxBody = new CANNON.Body(
-                            {
-                                shape: new CANNON.Box(new CANNON.Vec3(boxWidth/2,boxHeight/2,boxDepth/2)),
-                                mass: 10,
-                                angularDamping:1,
-                                linearDamping:0.3
-                            }
-                        )*/
-                        //setInterval(() => this.updateServer(),1000/30);
+                        this.playerController = new BasicCharacterController({camera:this.camera, scene:this.scene, player:player,world:this.world,components:this.#components});
+                        setInterval(() => this.updateServer(),1000/30);
                     }
-                    //Update based on the values sent from the server
-                    /*const interpolatedPosition = new CANNON.Vec3
-                    (
-                        (this.players[player.id].body.position.x + player.position.x)/2,
-                        (this.players[player.id].body.position.y + player.position.y)/2,
-                        (this.players[player.id].body.position.z + player.position.z)/2,
-                    )
-                    const interpolatedQuaternion = new CANNON.Quaternion
-                    (
-                        (this.players[player.id].body.quaternion.x + player.quaternion.x)/2,
-                        (this.players[player.id].body.quaternion.y + player.quaternion.y)/2,
-                        (this.players[player.id].body.quaternion.z + player.quaternion.z)/2,
-                        (this.players[player.id].body.quaternion.w + player.quaternion.w)/2,
-                    )*/
-                    //this.players[player.id].body.position.copy(interpolatedPosition);
-                    //this.players[player.id].body.quaternion.copy(interpolatedQuaternion);
                 }
             }
         }
@@ -718,18 +683,10 @@ export class Game
     }
     updateServer()
     {
-        /*
-        const inputData = 
+        if(this.playerController)
         {
-            inputForward: this.pressedKeys['W'.charCodeAt(0)],
-            inputBackward: this.pressedKeys['S'.charCodeAt(0)], 
-            inputStrafeLeft: this.pressedKeys['Q'.charCodeAt(0)],
-            inputStrafeRight: this.pressedKeys['E'.charCodeAt(0)],
-            inputRotateLeft: this.pressedKeys['A'.charCodeAt(0)],
-            inputRotateRight: this.pressedKeys['D'.charCodeAt(0)],
-            inputJump: this.pressedKeys[' '.charCodeAt(0)]
+            this.socket.emit("user-update",this.playerController.input);
         }
-        this.socket.emit("user-update",inputData);*/
     }
     animate(t)
     {
@@ -771,9 +728,9 @@ export class Game
             this.mixers.map(m => m.update(timeElapsedS));
         }
     
-        if (this.controls) 
+        if (this.playerController) 
         {
-            this.controls.Update(timeElapsedS);
+            this.playerController.Update(timeElapsedS);
         }
     }
 }

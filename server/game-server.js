@@ -22,11 +22,16 @@ class Player
         this.#body = new CANNON.Body(
         {
             shape: new CANNON.Box(new CANNON.Vec3(this.size.x/2,this.size.y/2,this.size.z/2)),
-            mass: 10,
-            position: new CANNON.Vec3(0,20,0),
+            mass: 100,
+            position: new CANNON.Vec3(0,50,0),
             angularDamping:1,
         });
         world.addBody(this.#body);
+    }
+
+    despawn(world)
+    {
+        world.removeBody(this.#body);
     }
 
     getInfo()
@@ -128,6 +133,7 @@ export class GameServer
 
     Leave(loginClient)
     {
+        this.players[loginClient.id].despawn();
         console.log(`Player ${loginClient.username} left room ${this.id}`);
 
         //Clean up the loginClient socket
