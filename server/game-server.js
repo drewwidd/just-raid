@@ -6,32 +6,42 @@ import CANNON from "cannon";
 class Player
 {
     #client;
-    #body;
+    body;
     constructor(loginClient,world)
     {
         this.#client = loginClient;
         this.leader = false;
         this.id = loginClient.id;
         this.size = new CANNON.Vec3(10,20,10);
+        this.class = "Mage";
+        this.canJump = false;
 
         this.spawn(world);
     }
 
     spawn(world)
     {
-        this.#body = new CANNON.Body(
+        this.body = new CANNON.Body(
         {
             shape: new CANNON.Box(new CANNON.Vec3(this.size.x/2,this.size.y/2,this.size.z/2)),
             mass: 100,
-            position: new CANNON.Vec3(0,50,0),
-            angularDamping:1,
+            material: world.physicsMaterial,
+            position: new CANNON.Vec3(0,100,0),
+            angularDamping:1,   //this keeps the player box from tipping over
         });
-        world.addBody(this.#body);
+        this.body.addEventListener('collide', (e) => 
+        {
+            if (e.contact.ni.y==1)
+            {
+                this.canJump = true;
+            }
+        });
+        world.addBody(this.body);
     }
 
     despawn(world)
     {
-        world.removeBody(this.#body);
+        world.removeBody(this.body);
     }
 
     getInfo()
@@ -41,8 +51,10 @@ class Player
             id : this.id,
             leader: this.leader,
             size: this.size,
-            position: this.#body.position,
-            quaternion: this.#body.quaternion
+            position: this.body.position,
+            quaternion: this.body.quaternion,
+            name: this.#client.username,
+            class: this.class
         }
         return info;
     }
@@ -84,15 +96,18 @@ export class GameServer
     }
     updateClients()
     {
+        //console.log("Starting Update "+JSON.stringify(Object.entries(this.players)));
         const playerInfo = {};
         for (const [id, player] of Object.entries(this.players))
         {
+            //console.log("adding player info");
             playerInfo[id] = player.getInfo();
         }
         const gameState = 
         {
             rooms: this.rooms,
-            players: playerInfo
+            players: playerInfo,
+            t: Date.now()
         }
         this.#io.in(this.id).emit("game-update",gameState);
     }
@@ -109,7 +124,7 @@ export class GameServer
         }
         this.players[loginClient.id] = newPlayer;
         loginClient.socket.on("chat-message", message => this.OnChatMessage(loginClient,message));
-        loginClient.socket.on("user-update", inputs => this.OnUserUpdate(loginClient,inputs));
+        loginClient.socket.on("user-update", update => this.OnUserUpdate(loginClient,update));
 
         //join the user to the socket room
         loginClient.socket.join(this.id);
@@ -121,8 +136,42 @@ export class GameServer
 
         this.onUpdate();
     }
-    OnUserUpdate(loginClient,inputs)
+    OnUserUpdate(loginClient,update)
     {
+        //console.log("Received update from client "+JSON.stringify(loginClient.username)+" Forward: "+JSON.stringify(update["inputs"]["keys"]["forward"]));
+        //this.players[loginClient.id].
+        if(this.players[loginClient.id])
+        {
+            const forward = update["inputs"]["keys"]["forward"];
+            const backward = update["inputs"]["keys"]["backward"];
+            const left = update["inputs"]["keys"]["left"];
+            const right = update["inputs"]["keys"]["right"];
+            const space = update["inputs"]["keys"]["space"];
+            const shift = update["inputs"]["keys"]["shift"];
+
+            const runVelocity = 40;
+            const backVelocity = runVelocity * (-2/3)
+            const shiftBoost = 1.5;
+
+            if(forward && !backward)
+            {
+                var velocityToSet = runVelocity;
+                if(shift)
+                {
+                    velocityToSet *= shiftBoost;
+                }
+                this.players[loginClient.id].body.velocity.x = velocityToSet;
+            }
+            else if(!forward && backward)
+            {
+                this.players[loginClient.id].body.velocity.x = backVelocity;
+            }
+            if(space && this.players[loginClient.id].canJump)
+            {
+                this.players[loginClient.id].body.velocity.y = 55;
+                this.players[loginClient.id].canJump = false;
+            }
+        }
     }
 
     OnDisconnect(loginClient)

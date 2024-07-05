@@ -8,25 +8,28 @@ export class TestMap
     {
         this.#components = [];
         this.name = "TEST_ROOM";
-        this.initalize();
-        this.add(world);
+        this.world = world;
+        this.initalize(this.world);
+        this.add(this.world);
     }
-    initalize()
+    initalize(world)
     {
+
         this.addGround();
         this.addBox();
         //this.addSphere();
     }
     addGround()
     {
-        const gridWidth = 100;
-        const gridHeight = 100;
+        const gridWidth = 300;
+        const gridHeight = 300;
 
         const ground = new DisplayComponent();
         ground.body = new CANNON.Body(
             {
                 shape: new CANNON.Box(new CANNON.Vec3(gridWidth/2,gridHeight/2,0.0001)),
-                type: CANNON.Body.STATIC
+                type: CANNON.Body.STATIC,
+                material: this.world.physicsMaterial
             }
         );
         ground.body.quaternion.setFromEuler(-Math.PI/2,0,0);    //Move the plane to the Z-axis
@@ -41,8 +44,8 @@ export class TestMap
             {
                 shape: new CANNON.Box(new CANNON.Vec3(boxWidth/2,boxHeight/2,boxDepth/2)),
                 type: CANNON.Body.STATIC,
-                //mass: 10,
-                position: new CANNON.Vec3(0,5,0)
+                material: this.world.physicsMaterial,
+                position: new CANNON.Vec3(0,30,0)
             }
         )
 

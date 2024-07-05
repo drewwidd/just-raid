@@ -11,7 +11,17 @@ export class World extends CANNON.World
 
     initalize()
     {
-        this.gravity = new CANNON.Vec3(0,-9.81*5,0);
+        this.gravity = new CANNON.Vec3(0,-150,0);
+        
+        this.physicsMaterial = new CANNON.Material("groundMaterial");
+        var groundMaterial = new CANNON.ContactMaterial(
+            this.physicsMaterial,      // Material #1
+            this.physicsMaterial,      // Material #2
+            {
+                friction:1.0,
+                restitution: 0.0
+            });
+        this.addContactMaterial(groundMaterial);
     }
 }
 

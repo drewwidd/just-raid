@@ -94,7 +94,7 @@ function createLobby()
     socket.emit("get-rooms");
 
     //Temporary code for testing to automatically create a new game
-    onNewGameButtonClick();
+    //onNewGameButtonClick();
 }
 
 function onBackButtonClick()
