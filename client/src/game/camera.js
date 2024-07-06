@@ -26,17 +26,17 @@ export class ThirdPartyCamera
 
     CalculateIdealOffset()
     {
-        const idealOffset = new THREE.Vector3(-15, 20, -30);
-        idealOffset.applyQuaternion(this.params.target.body.quaternion);
-        idealOffset.add(this.params.target.body.position);
+        const idealOffset = new THREE.Vector3(-80, 35, 0);
+        idealOffset.applyQuaternion(this.params.target.quaternion);
+        idealOffset.add(this.params.target.position);
         return idealOffset;
     }
 
     CalculateIdealLookat()
     {
-        const idealLookat = new THREE.Vector3(0, 10, 50);
-        idealLookat.applyQuaternion(this.params.target.body.quaternion);
-        idealLookat.add(this.params.target.body.position);
+        const idealLookat = new THREE.Vector3(0, 0, 0);
+        idealLookat.applyQuaternion(this.params.target.quaternion);
+        idealLookat.add(this.params.target.position);
         return idealLookat;
     }
 
@@ -49,8 +49,6 @@ export class ThirdPartyCamera
     
         this.currentPosition.lerp(idealOffset, t);
         this.currentLookat.lerp(idealLookat, t);
-
-        console.log(this.currentPosition);
     
         this.camera.position.copy(this.currentPosition);
         this.camera.lookAt(this.currentLookat);

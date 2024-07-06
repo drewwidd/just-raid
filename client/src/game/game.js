@@ -52,13 +52,19 @@ class BasicCharacterControllerInput
                 this.keys.forward = true;
                 break;
             case 'A'.charCodeAt(0):     // a
-                this.keys.left = true;
+                this.keys.rotateleft = true;
                 break;
             case 'S'.charCodeAt(0):     // s
                 this.keys.backward = true;
                 break;
             case 'D'.charCodeAt(0):     // d
-                this.keys.right = true;
+                this.keys.rotateright = true;
+                break;
+            case 'Q'.charCodeAt(0):     // q
+                this.keys.strafeleft = true;
+                break;
+            case 'E'.charCodeAt(0):     // e
+                this.keys.straferight = true;
                 break;
             case 32: // SPACE
                 this.keys.space = true;
@@ -77,13 +83,19 @@ class BasicCharacterControllerInput
                 this.keys.forward = false;
                 break;
             case 65: // a
-                this.keys.left = false;
+                this.keys.rotateleft = false;
                 break;
             case 83: // s
                 this.keys.backward = false;
                 break;
             case 68: // d
-                this.keys.right = false;
+                this.keys.rotateright = false;
+                break;
+            case 81: // q
+                this.keys.strafeleft = false;
+                break;
+            case 69: // e
+                this.keys.straferight = false;
                 break;
             case 32: // SPACE
                 this.keys.space = false;
@@ -112,7 +124,7 @@ export class Game
     }
     onUpdate(gameState)
     {
-        //console.log("Received game update: "+JSON.stringify(gameState))
+        console.log("Received game update: "+JSON.stringify(gameState.players))
         //Let's iterate through the rooms and see if we need to draw anything
         if(gameState.rooms!=null)
         {
@@ -142,7 +154,7 @@ export class Game
                     {
                         //Create our player controller
                         this.playerController = new BasicCharacterController({camera:this.camera, scene:this.scene, player:player,world:this.world,components:this.#components});
-                        
+
                         //this.camera.lookAt(this.playerController.body.position);
                         setInterval(() => this.updateServer(),1000/30);
                     }
@@ -162,15 +174,20 @@ export class Game
                                 player.position.z,
                         );
                         this.scene.add(this.players[id]);
+
+                        this.thirdPartyCamera = new ThirdPartyCamera(
+                            {
+                                camera: this.camera,
+                                target: this.players[this.myID]
+                            }
+                        );
                     }
                     else    //We've been added already so just move us
                     {
-                        this.players[id].position.set
-                        (
-                                player.position.x,
-                                player.position.y,
-                                player.position.z,
-                        );
+                        this.players[id].position.copy(player.position);
+                        /*this.players[id].position.x = ((player.position.x+this.players[id].position.x)/2);
+                        this.players[id].position.y = ((player.position.y+this.players[id].position.y)/2);
+                        this.players[id].position.z = ((player.position.z+this.players[id].position.z)/2);*/
                     }
                 }
             }
@@ -179,7 +196,14 @@ export class Game
     loadTextures()
     {
         this.skybox = new THREE.TextureLoader().load('resources/textures/TestMap_Skybox.png');
-        this.groundTexture = new THREE.TextureLoader().load('resources/textures/TestMap_Ground.jpg');
+        this.groundTexture = new THREE.TextureLoader().load('resources/textures/TestMap_Ground.png');
+        this.groundTexture.wrapS = THREE.RepeatWrapping;
+        this.groundTexture.wrapT = THREE.RepeatWrapping;
+        this.groundTexture.repeat.set(20,20);
+        this.wallTexture = new THREE.TextureLoader().load('resources/textures/TestMap_Wall.jpg'); 
+        this.wallTexture.wrapS = THREE.RepeatWrapping;
+        this.wallTexture.wrapT = THREE.RepeatWrapping;
+        this.wallTexture.repeat.set(3,3);
     }
     initalize()
     {
@@ -220,7 +244,8 @@ export class Game
             const update = 
             {
                 t: Date.now(),
-                inputs: this.playerController.input
+                inputs: this.playerController.input,
+                quaternion: this.players[this.myID].quaternion
             };
             //console.log("Sending server user-update: "+JSON.stringify(update));
             this.socket.emit("user-update",update);
@@ -235,12 +260,32 @@ export class Game
 
         const timeBetweenFrames = t - this.previousRAF;
 
-        //Update Camera
+        
         if(this.playerController!=null)
         {
-            //console.log("Updating camera "+JSON.stringify(this.players[this.myID].position));
-            this.camera.lookAt(this.players[this.myID].position);
-            this.camera.position.y = this.players[this.myID].position.y + 50;
+            if(this.playerController.input.keys.rotateleft && !this.playerController.input.keys.rotateright)
+            {
+                this.players[this.myID].rotateY(0.003*timeBetweenFrames);
+            }
+            else if(this.playerController.input.keys.rotateright && !this.playerController.input.keys.rotateleft)
+            {
+                this.players[this.myID].rotateY(-0.003*timeBetweenFrames);
+            }
+        }
+
+        //Client Side Prediction
+        /*if(this.playerController!=null)
+        {
+            if(this.playerController.input.keys.forward)
+            {
+                this.players[this.myID].position.x+=0.5;
+            }
+        }*/
+
+        //Update Camera
+        if(this.thirdPartyCamera!=null)
+        {
+            this.thirdPartyCamera.Update(timeBetweenFrames);
         }
 
         //Render the objects

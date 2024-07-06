@@ -76,7 +76,7 @@ export class GameServer
 
         this.initalize();
         setInterval(() => this.updateGameState(),1000/60);
-        setInterval(() => this.updateClients(),100);
+        setInterval(() => this.updateClients(),20);
     }
     initalize()
     {
@@ -144,14 +144,17 @@ export class GameServer
         {
             const forward = update["inputs"]["keys"]["forward"];
             const backward = update["inputs"]["keys"]["backward"];
-            const left = update["inputs"]["keys"]["left"];
-            const right = update["inputs"]["keys"]["right"];
             const space = update["inputs"]["keys"]["space"];
             const shift = update["inputs"]["keys"]["shift"];
+            const strafeLeft = update["inputs"]["keys"]["strafeleft"];
+            const strafeRight = update["inputs"]["keys"]["straferight"];
 
-            const runVelocity = 40;
+            const runVelocity = 50;
             const backVelocity = runVelocity * (-2/3)
-            const shiftBoost = 1.5;
+            const shiftBoost = 1.75;
+
+            var velocityX = 0;
+            var velocityZ = 0;
 
             if(forward && !backward)
             {
@@ -160,17 +163,58 @@ export class GameServer
                 {
                     velocityToSet *= shiftBoost;
                 }
-                this.players[loginClient.id].body.velocity.x = velocityToSet;
+
+                let directionVector = new CANNON.Vec3(1,0,0);
+                directionVector.x += velocityToSet;
+                directionVector = this.players[loginClient.id].body.quaternion.vmult( directionVector );
+                velocityX += directionVector.x;
+                velocityZ += directionVector.z;
             }
             else if(!forward && backward)
-            {
-                this.players[loginClient.id].body.velocity.x = backVelocity;
+            {                
+                let directionVector = new CANNON.Vec3(1,0,0);
+                directionVector.x += backVelocity;
+                directionVector = this.players[loginClient.id].body.quaternion.vmult( directionVector );
+                velocityX += directionVector.x;
+                velocityZ += directionVector.z;
             }
-            if(space && this.players[loginClient.id].canJump)
+            if(strafeLeft && !strafeRight)
             {
-                this.players[loginClient.id].body.velocity.y = 55;
+                let directionVector = new CANNON.Vec3(1,0,0);
+                directionVector.z -= runVelocity;
+                directionVector = this.players[loginClient.id].body.quaternion.vmult( directionVector );
+                velocityX += directionVector.x;
+                velocityZ += directionVector.z;
+            }
+            else if(!strafeLeft && strafeRight)
+            {
+                let directionVector = new CANNON.Vec3(1,0,0);
+                directionVector.z += runVelocity;
+                directionVector = this.players[loginClient.id].body.quaternion.vmult( directionVector );
+                velocityX += directionVector.x;
+                velocityZ += directionVector.z;
+            }
+
+            if(!space && !this.players[loginClient.id].hasReleasedSpace)
+            {
+                this.players[loginClient.id].hasReleasedSpace = true;
+            }
+            else if(space && this.players[loginClient.id].canJump && this.players[loginClient.id].hasReleasedSpace)
+            {
+                this.players[loginClient.id].body.velocity.y = 70;
                 this.players[loginClient.id].canJump = false;
+                this.players[loginClient.id].hasReleasedSpace = false;
             }
+
+            this.players[loginClient.id].body.velocity.x = velocityX;
+            this.players[loginClient.id].body.velocity.z = velocityZ;
+
+            this.players[loginClient.id].body.quaternion.set(
+                update["quaternion"]._x,
+                update["quaternion"]._y,
+                update["quaternion"]._z,
+                update["quaternion"]._w
+            );
         }
     }
 

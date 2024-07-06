@@ -16,6 +16,10 @@ export class TestMap
     initalize()
     {
         this.addGround();
+        this.addWall1();
+        this.addWall2();
+        this.addWall3();
+        this.addWall4();
         this.addBox();
         this.addLight();
         //this.addSphere();
@@ -47,12 +51,92 @@ export class TestMap
                 color: 0xFFFFFF,
                 side: THREE.DoubleSide,
                 wireframe:false,
-                //map: this.game.groundTexture
+                map: this.game.groundTexture
             }
         );
         ground.display = new THREE.Mesh(groundGeometry,groundMaterial);
         ground.display.rotation.x = -0.5 * Math.PI;
         this.#components.push(ground);
+    }
+    addWall1()
+    {
+        const wall = new DisplayComponent();
+        const Width = 300;
+        const Height = 100;
+        const wallGeometry = new THREE.PlaneGeometry(Width,Height);
+        const wallMaterial = new THREE.MeshBasicMaterial(
+            {
+                color: 0xFFFFFF,
+                side: THREE.DoubleSide,
+                wireframe:false,
+                map: this.game.wallTexture
+            }
+        );
+        wall.display = new THREE.Mesh(wallGeometry,wallMaterial);
+        //ground.display.rotation.x = -0.5 * Math.PI;
+        wall.display.position.z = 150;
+        wall.display.position.y = 50;
+        this.#components.push(wall);
+    }
+    addWall2()
+    {
+        const wall = new DisplayComponent();
+        const Width = 300;
+        const Height = 100;
+        const wallGeometry = new THREE.PlaneGeometry(Width,Height);
+        const wallMaterial = new THREE.MeshBasicMaterial(
+            {
+                color: 0xFFFFFF,
+                side: THREE.DoubleSide,
+                wireframe:false,
+                map: this.game.wallTexture
+            }
+        );
+        wall.display = new THREE.Mesh(wallGeometry,wallMaterial);
+        //ground.display.rotation.x = -0.5 * Math.PI;
+        wall.display.position.z = -150;
+        wall.display.position.y = 50;
+        this.#components.push(wall);
+    }
+    addWall3()
+    {
+        const wall = new DisplayComponent();
+        const Width = 300;
+        const Height = 100;
+        const wallGeometry = new THREE.PlaneGeometry(Width,Height);
+        const wallMaterial = new THREE.MeshBasicMaterial(
+            {
+                color: 0xFFFFFF,
+                side: THREE.DoubleSide,
+                wireframe:false,
+                map: this.game.wallTexture
+            }
+        );
+        wall.display = new THREE.Mesh(wallGeometry,wallMaterial);
+        wall.display.rotation.y = -0.5 * Math.PI;
+        wall.display.position.x = 150;
+        wall.display.position.y = 50;
+        this.#components.push(wall);
+    }
+    addWall4()
+    {
+        const wall = new DisplayComponent();
+        const Width = 300;
+        const Height = 100;
+        const wallGeometry = new THREE.PlaneGeometry(Width,Height);
+        const wallMaterial = new THREE.MeshBasicMaterial(
+            {
+                color: 0xFFFFFF,
+                side: THREE.DoubleSide,
+                wireframe:false,
+                map: this.game.wallTexture
+            }
+        );
+        wall.display = new THREE.Mesh(wallGeometry,wallMaterial);
+        wall.display.rotation.y = -0.5 * Math.PI;
+        wall.display.position.x = -150;
+        wall.display.position.y = 50;
+        this.#components.push(wall);
     }
     addBox()
     {
